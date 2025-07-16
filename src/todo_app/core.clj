@@ -1,5 +1,6 @@
 (ns todo-app.core
   (:require [ring.adapter.jetty :refer [run-jetty]]
+            [todo-app.db :as db]
             [todo-app.handler :refer [app]]
             [clojure.core.async :refer [go <!! >!! chan]]))
 
@@ -7,6 +8,8 @@
 
 (defn -main [& args]
   (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
+    (println "Connecting to database...")
+    (db/init-db!)
     (println (str "Starting server on port " port))
     (.addShutdownHook
      (Runtime/getRuntime)
@@ -19,4 +22,6 @@
         (<!! signal)
         (println "Shutting down server...")
         (.stop server)
+        (println "Closing database connections...")
+        (db/close)
         (println "Server stopped.")))))

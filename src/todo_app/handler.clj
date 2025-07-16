@@ -95,7 +95,3 @@
   (-> app-routes
       (wrap-json-body {:keywords? false})
       wrap-json-response))
-
-;; Initialize database on startup
-(db/init-db!)
-(db/setup-database!)
