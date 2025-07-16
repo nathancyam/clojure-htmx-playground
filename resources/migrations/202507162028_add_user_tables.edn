@@ -1,0 +1,26 @@
+{:up ["CREATE EXTENSION citext"
+      "CREATE TABLE IF NOT EXISTS users (
+        id uuid not null primary key,
+        email           citext       not null,
+        hashed_password varchar(255),
+        confirmed_at    timestamp(0),
+        inserted_at     timestamp(0) not null,
+        updated_at      timestamp(0) not null
+      )"
+      "CREATE UNIQUE INDEX users_email_index on users (email)"
+      "CREATE TABLE IF NOT EXISTS users_tokens (
+        id uuid not null primary key,
+        user_id uuid not null references users on delete cascade,
+        token            bytea        not null,
+        context          varchar(255) not null,
+        sent_to          varchar(255),
+        authenticated_at timestamp(0),
+        inserted_at      timestamp(0) not null
+    )"
+      "CREATE INDEX IF NOT EXISTS users_tokens_user_id_index ON users_tokens (user_id)"
+      "CREATE UNIQUE INDEX users_tokens_context_token_index ON users_tokens (context, token)"]
+ :down ["DROP INDEX IF EXISTS users_email_index"
+        "DROP TABLE IF EXISTS users"
+        "DROP INDEX IF EXISTS users_tokens_user_id_index"
+        "DROP INDEX IF EXISTS users_tokens_context_token_index"
+        "DROP TABLE IF EXISTS users_tokens"]}
