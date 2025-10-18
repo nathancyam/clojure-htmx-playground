@@ -11,6 +11,7 @@
         com.zaxxer/HikariCP {:mvn/version "6.2.1"}
         dev.weavejester/ragtime {:mvn/version "0.11.0"}
         crypto-password/crypto-password {:mvn/version "0.3.0"}
+        aero/aero {:mvn/version "1.1.6"}
         cheshire/cheshire {:mvn/version "5.11.0"}}
  :aliases {:dev {:extra-paths ["dev"]
                  :extra-deps {ring/ring-mock {:mvn/version "0.6.1"}}}

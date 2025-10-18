@@ -31,4 +31,7 @@
                                (assoc :updated_at [:now]))])
                   (returning :*)
                   sql/format)]
-    (first (jdbc/execute! (get-db) query))))
+    (try
+      (first (jdbc/execute! (get-db) query))
+      (catch Exception e
+        {:failed (.getMessage e)}))))

@@ -1,0 +1,7 @@
+{:greeting "World!"
+ :migrations {:uri "jdbc:postgresql://localhost:5432/todoapp_dev?user=postgres&password=postgres"}
+ :db-spec {:dbtype "postgres"
+           :dbname "todoapp_dev"
+           :host "localhost"
+           :username "postgres"
+           :password "postgres"}}
