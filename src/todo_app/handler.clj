@@ -1,10 +1,16 @@
 (ns todo-app.handler
-  (:require [compojure.core :refer [defroutes GET POST PUT DELETE]]
-            [compojure.route :as route]
-            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
-            [ring.util.response :refer [response status]]
-            [todo-app.todos :as todos]
-            [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]
+   [compojure.core :refer [defroutes DELETE GET PATCH POST PUT]]
+   [compojure.route :as route]
+   [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
+   [ring.middleware.params :refer [wrap-params]]
+   [ring.middleware.reload :refer [wrap-reload]]
+   [ring.util.response :refer [response status]]
+   [todo-app.todos :as todos]
+   [views.util :refer [html-response render]]
+   [views.components :as components]
+   [views.pages :as pages]))
 
 (defn json-response [data & [status-code]]
   (-> (response data)
@@ -15,13 +21,6 @@
       (status (or status-code 400))))
 
 ;; Route handlers
-(defn get-todos []
-  (try
-    (let [entries (todos/get-all-todos)]
-      (json-response entries))
-    (catch Exception _
-      (error-response "Failed to retrieve todos" 500))))
-
 (defn get-todo [id]
   (try
     (if-let [todo (todos/get-todo-by-id (java.util.UUID/fromString id))]
@@ -33,6 +32,7 @@
       (error-response "Failed to retrieve todo" 500))))
 
 (defn create-todo [request]
+  (prn (:params request))
   (try
     (let [todo-data (:body request)
           title (get todo-data "title")
@@ -70,28 +70,51 @@
 
 (defn delete-todo [id]
   (try
-    (let [uuid-id (java.util.UUID/fromString id)]
+    (let [uuid-id (parse-uuid id)]
       (if (todos/get-todo-by-id uuid-id)
         (do
           (todos/delete-todo! uuid-id)
-          (json-response {:message "Todo deleted successfully"}))
+          (status (response "") 200))
         (error-response "Todo not found" 404)))
     (catch IllegalArgumentException _
       (error-response "Invalid todo ID format" 400))
     (catch Exception _
       (error-response "Failed to delete todo" 500))))
 
+(defn my-page []
+  (views.util/html-response (pages/home)))
+
+(defn toggle-todo [id]
+  (let [uid (parse-uuid id) todo (todos/get-todo-by-id uid)]
+    (if (some? todo)
+      (let [updated (todos/update-todo! uid {:completed (not (:todos/completed todo))})]
+        (html-response (render (components/todo-component updated))))
+      (response {:status 404}))))
+
+(defn new-todo [data]
+  (todos/create-todo! data)
+  (-> (todos/get-all-todos)
+      (pages/todo-list-hx)
+      (html-response)))
+
 ;; Routes
 (defroutes app-routes
-  (GET "/todos" [] (get-todos))
+  (GET "/example" [] (my-page))
+  (GET "/todos" [] (-> (todos/get-all-todos)
+                       (pages/todos)
+                       (html-response)))
   (GET "/todos/:id" [id] (get-todo id))
   (POST "/todos" request (create-todo request))
+  (POST "/todo" [title]
+    (new-todo {:title title}))
   (PUT "/todos/:id" [id :as request] (update-todo id request))
+  (PATCH "/todo/:id/status" [id] (toggle-todo id))
   (DELETE "/todos/:id" [id] (delete-todo id))
   (route/not-found {:error "Route not found"}))
 
 ;; Middleware stack
 (def app
-  (-> app-routes
+  (-> (wrap-reload #'app-routes)
       (wrap-json-body {:keywords? false})
+      wrap-params
       wrap-json-response))

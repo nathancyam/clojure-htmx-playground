@@ -1,7 +1,7 @@
 (ns todo-app.accounts
   (:require [honey.sql :as sql]
             [honey.sql.helpers :refer [select from where insert-into values returning order-by]]
-            [todo-app.db :refer [get-db]]
+            [storage.db :refer [get-db]]
             [crypto.password.bcrypt :as password]
             [next.jdbc :as jdbc]))
 

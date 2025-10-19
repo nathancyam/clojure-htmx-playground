@@ -1,12 +1,12 @@
 (ns todo-app.core
   (:require [ring.adapter.jetty :refer [run-jetty]]
-            [todo-app.db :as db]
+            [storage.db :as db]
             [todo-app.handler :refer [app]]
             [clojure.core.async :refer [go <!! >!! chan]]))
 
 (defonce signal (chan))
 
-(defn -main [& args]
+(defn -main []
   (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
     (println "Connecting to database...")
     (db/init-db!)

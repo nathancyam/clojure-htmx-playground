@@ -1,4 +1,4 @@
-(ns todo-app.db
+(ns storage.db
   (:require [next.jdbc.connection :as connection]
             [aero.core :refer [read-config]])
   (:import (com.zaxxer.hikari HikariDataSource)))
