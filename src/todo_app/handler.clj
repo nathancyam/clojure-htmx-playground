@@ -114,7 +114,7 @@
 
 ;; Middleware stack
 (def app
-  (-> (wrap-reload #'app-routes)
+  (-> app-routes
       (wrap-json-body {:keywords? false})
       wrap-params
       wrap-json-response))

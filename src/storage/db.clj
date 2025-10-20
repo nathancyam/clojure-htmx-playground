@@ -1,5 +1,6 @@
 (ns storage.db
   (:require [next.jdbc.connection :as connection]
+            [clojure.tools.logging :as log]
             [aero.core :refer [read-config]])
   (:import (com.zaxxer.hikari HikariDataSource)))
 
@@ -9,6 +10,7 @@
 (defonce datasource (atom nil))
 
 (defn init-db! []
+  (log/info "Connecting to database...")
   (when @datasource
     (.close @datasource))
   (reset! datasource (connection/->pool HikariDataSource db-spec)))

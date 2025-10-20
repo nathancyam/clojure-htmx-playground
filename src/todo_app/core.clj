@@ -1,24 +1,40 @@
 (ns todo-app.core
   (:require [ring.adapter.jetty :refer [run-jetty]]
             [storage.db :as db]
+            [clojure.tools.logging :as log]
+            [ring.middleware.reload :refer [wrap-reload]]
             [todo-app.handler :refer [app]]
             [clojure.core.async :refer [go <!! >!! chan]]))
 
 (defonce signal (chan))
 
+(defonce dev-server (atom nil))
+
+(defn start-dev-server []
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
+    (log/info "Starting server in development mode...")
+    (db/init-db!)
+    (log/info "Starting server on port" {:port port})
+    (let [server (run-jetty (wrap-reload #'app) {:port port :join? false})]
+      (reset! dev-server server)
+      (server))))
+
+(defn reload-dev-server []
+  (.stop @dev-server)
+  (start-dev-server))
+
 (defn -main []
   (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
-    (println "Connecting to database...")
     (db/init-db!)
-    (println (str "Starting server on port " port))
+    (log/info "Starting server on port" {:port port})
     (.addShutdownHook
      (Runtime/getRuntime)
      (Thread. (fn []
-                (println "Sending exit signal")
+                (log/info "Sending exit signal")
                 (>!! signal :shutdown))))
     (let [server (run-jetty app {:port port :join? false})]
       (go
-        (println "Started server on port " port " and waiting for shutdown signal...")
+        (log/info "Started server on port " port " and waiting for shutdown signal...")
         (<!! signal)
         (println "Shutting down server...")
         (.stop server)

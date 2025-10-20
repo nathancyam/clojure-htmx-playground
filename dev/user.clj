@@ -3,7 +3,8 @@
             [ragtime.jdbc :as jdbc]
             [todo-app.todos :as todos]
             [aero.core :refer [read-config]]
-            [todo-app.core :as core]))
+            [todo-app.core :as core]
+            [clojure.core :as c]))
 
 (def config
   {:datastore  (jdbc/sql-database {:connection-uri (-> (read-config "config.edn") :migrations :uri)})
@@ -21,7 +22,10 @@
   (accounts/create-user! {:email email
                           :password "Password123!"}))
 
-(defn start-server
+(defn start-dev-server
   "Start the development server"
   []
-  (core/-main))
+  (core/start-dev-server))
+
+(defn reload-dev-server []
+  (core/reload-dev-server))
