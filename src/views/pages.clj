@@ -1,6 +1,7 @@
 (ns views.pages
   (:require [views.components :as c]
-            [views.util :refer [render]]))
+            [views.util :refer [render]]
+            [clojure.tools.logging :as log]))
 
 (def head
   [:head [:title "example app"]
@@ -20,6 +21,7 @@
   (layout [:span {:class "example"} "Ahhh"]))
 
 (defn todo-list [todos]
+  (log/info "hello for list")
   [:section.space-y-2 {:id "todo-list"}
    c/new-todo
    (for [todo todos] (c/todo-component todo))])
