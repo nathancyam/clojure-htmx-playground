@@ -49,7 +49,7 @@
 (defn update-todo [id request]
   (try
     (let [todo-data (:body request)
-          uuid-id (java.util.UUID/fromString id)]
+          uuid-id (parse-uuid id)]
       (if-let [_existing-todo (todos/get-todo-by-id uuid-id)]
         (let [updated-data (-> {}
                                (cond-> (contains? todo-data "title")
