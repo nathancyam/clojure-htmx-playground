@@ -1,6 +1,7 @@
 (ns user
   (:require [todo-app.accounts :as accounts]
             [ragtime.jdbc :as jdbc]
+            [ragtime.repl :as repl]
             [todo-app.todos :as todos]
             [aero.core :refer [read-config]]
             [todo-app.core :as core]
@@ -9,6 +10,9 @@
 (def config
   {:datastore  (jdbc/sql-database {:connection-uri (-> (read-config "config.edn") :migrations :uri)})
    :migrations (jdbc/load-resources "migrations")})
+
+(defn migrate []
+  (repl/migrate config))
 
 (defn sample-todos
   "Create some sample todos for testing"
