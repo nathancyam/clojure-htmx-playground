@@ -5,7 +5,6 @@
    [compojure.route :as route]
    [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
    [ring.middleware.params :refer [wrap-params]]
-   [ring.middleware.reload :refer [wrap-reload]]
    [ring.util.response :refer [response status]]
    [todo-app.todos :as todos]
    [views.util :refer [html-response render]]
