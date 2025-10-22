@@ -2,7 +2,6 @@
   (:require [todo-app.accounts :as accounts]
             [ragtime.jdbc :as jdbc]
             [ragtime.repl :as repl]
-            [todo-app.todos :as todos]
             [aero.core :refer [read-config]]
             [endpoint.core :as core]
             [clojure.core :as c]))
