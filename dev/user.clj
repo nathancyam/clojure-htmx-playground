@@ -14,13 +14,6 @@
 (defn migrate []
   (repl/migrate config))
 
-(defn sample-todos
-  "Create some sample todos for testing"
-  []
-  (todos/create-todo! {:title "Learn Clojure" :description "Study Clojure fundamentals"})
-  (todos/create-todo! {:title "Build web app" :description "Create a todo app with Ring"})
-  (todos/create-todo! {:title "Deploy to production" :description "Set up deployment pipeline"}))
-
 (defn sample-user
   [email]
   (accounts/create-user! {:email email

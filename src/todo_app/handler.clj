@@ -59,8 +59,6 @@
               (json-response updated-todo))
             (error-response "No valid fields to update" 400)))
         (error-response "Todo not found" 404)))
-    (catch IllegalArgumentException _
-      (error-response "Invalid todo ID format" 400))
     (catch Exception _
       (error-response "Failed to update todo" 500))))
 
