@@ -3,7 +3,7 @@
    [clojure.string :as str]
    [compojure.core :refer [defroutes DELETE GET PATCH POST PUT context]]
    [ring.util.response :refer [response status]]
-   [todo-app.todos :as todos]
+   [todo-app.db :as todos]
    [views.util :refer [html-response render]]
    [views.components :as components]
    [views.pages :as pages]))

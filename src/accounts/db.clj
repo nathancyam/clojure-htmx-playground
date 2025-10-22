@@ -1,4 +1,4 @@
-(ns todo-app.accounts
+(ns accounts.db
   (:require [honey.sql :as sql]
             [honey.sql.helpers :refer [select from where insert-into values returning order-by]]
             [storage.db :refer [get-db]]

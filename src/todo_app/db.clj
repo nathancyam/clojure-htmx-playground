@@ -1,4 +1,4 @@
-(ns todo-app.todos
+(ns todo-app.db
   (:require [honey.sql :as sql]
             [next.jdbc :as jdbc]
             [storage.db :refer [get-db]]
