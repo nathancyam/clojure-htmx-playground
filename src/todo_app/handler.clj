@@ -82,8 +82,8 @@
         (html-response (render (components/todo-component updated))))
       (response {:status 404}))))
 
-(defn new-todo [data]
-  (todos/create-todo! data)
+(defn new-todo [db data]
+  (todos/create-todo! db data)
   (-> (todos/get-all-todos)
       (pages/todo-list-hx)
       (html-response)))
@@ -101,5 +101,5 @@
                        (pages/todos)
                        (html-response)))
   (context "/todos/:id" [] todo-app-id-routes)
-  (POST "/todo" [title]
-    (new-todo {:title title})))
+  (POST "/todo" [title :as {db :db}]
+    (new-todo db {:title title})))

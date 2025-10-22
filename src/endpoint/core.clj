@@ -22,12 +22,18 @@
 
 (defonce dev-server (atom nil))
 
+(defn wrap-db [handler]
+  (fn [request]
+    (let [db-conn (db/get-db)
+          request-with-db (assoc request :db db-conn)]
+      (handler request-with-db))))
+
 (defn start-dev-server []
   (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
     (log/info "Starting server in development mode...")
     (db/init-db!)
     (log/info "Starting server on port" {:port port})
-    (let [server (run-jetty (wrap-reload #'app) {:port port :join? false})]
+    (let [server (run-jetty (wrap-reload (wrap-db #'app)) {:port port :join? false})]
       (reset! dev-server server)
       (server))))
 
@@ -36,7 +42,8 @@
   (start-dev-server))
 
 (defn -main []
-  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))
+        app (app)]
     (db/init-db!)
     (log/info "Starting server on port" {:port port})
     (.addShutdownHook
@@ -44,7 +51,7 @@
      (Thread. (fn []
                 (log/info "Sending exit signal")
                 (>!! signal :shutdown))))
-    (let [server (run-jetty app {:port port :join? false})]
+    (let [server (run-jetty (wrap-db app) {:port port})]
       (go
         (log/info "Started server on port " port " and waiting for shutdown signal...")
         (<!! signal)

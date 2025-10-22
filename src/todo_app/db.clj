@@ -25,15 +25,17 @@
                   sql/format)]
     (first (jdbc/execute! (get-db) query))))
 
-(defn create-todo! [todo-data]
-  (let [now (now-timestamp)
-        with-timestamps (into {:created_at now :updated_at now} todo-data)
-        query (-> (insert-into :todos)
-                  (values [with-timestamps])
-                  (returning :*)
-                  sql/format)]
-    (prn with-timestamps)
-    (first (jdbc/execute! (get-db) query))))
+(defn create-todo!
+  ([todo-data] (create-todo! (get-db) todo-data))
+  ([db todo-data]
+   (let [now (now-timestamp)
+         with-timestamps (into {:created_at now :updated_at now} todo-data)
+         query (-> (insert-into :todos)
+                   (values [with-timestamps])
+                   (returning :*)
+                   sql/format)]
+     (prn with-timestamps)
+     (first (jdbc/execute! db query)))))
 
 (defn update-todo! [id todo-data]
   (let [query (-> (h/update :todos)
