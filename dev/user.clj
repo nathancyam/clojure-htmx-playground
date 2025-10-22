@@ -1,5 +1,5 @@
 (ns user
-  (:require [todo-app.accounts :as accounts]
+  (:require [accounts.db :as accounts]
             [ragtime.jdbc :as jdbc]
             [ragtime.repl :as repl]
             [aero.core :refer [read-config]]
