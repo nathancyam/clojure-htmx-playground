@@ -2,9 +2,6 @@
   (:require
    [clojure.string :as str]
    [compojure.core :refer [defroutes DELETE GET PATCH POST PUT context]]
-   [compojure.route :as route]
-   [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
-   [ring.middleware.params :refer [wrap-params]]
    [ring.util.response :refer [response status]]
    [todo-app.todos :as todos]
    [views.util :refer [html-response render]]
@@ -95,24 +92,16 @@
 
 (defroutes todo-app-id-routes
   (GET "/" [id] (get-todo id))
+  (POST "/" request (create-todo request))
   (PUT "/" [id :as request] (update-todo id request))
   (PATCH "/status" [id] (toggle-todo id))
   (DELETE "/" [id] (delete-todo id)))
 
 ;; Routes
-(defroutes app-routes
+(defroutes routes
   (GET "/todos" [] (-> (todos/get-all-todos)
                        (pages/todos)
                        (html-response)))
-  (POST "/todos" request (create-todo request))
   (context "/todos/:id" [] todo-app-id-routes)
   (POST "/todo" [title]
-    (new-todo {:title title}))
-  (route/not-found {:error "Route not found"}))
-
-;; Middleware stack
-(def app
-  (-> app-routes
-      (wrap-json-body {:keywords? false})
-      wrap-params
-      wrap-json-response))
+    (new-todo {:title title})))

@@ -1,10 +1,22 @@
-(ns todo-app.core
+(ns endpoint.core
   (:require [ring.adapter.jetty :refer [run-jetty]]
-            [storage.db :as db]
-            [clojure.tools.logging :as log]
+            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.middleware.reload :refer [wrap-reload]]
-            [todo-app.handler :refer [app]]
-            [clojure.core.async :refer [go <!! >!! chan]]))
+            [clojure.tools.logging :as log]
+            [storage.db :as db]
+            [compojure.core :refer [defroutes context]]
+            [ring.middleware.params :refer [wrap-params]]
+            [clojure.core.async :refer [go <!! >!! chan]]
+            [todo-app.handler :as todos]))
+
+(defroutes all-routes
+  (context "/" [] todos/routes))
+
+(def app
+  (-> all-routes
+      (wrap-json-body {:keywords? false})
+      wrap-params
+      wrap-json-response))
 
 (defonce signal (chan))
 

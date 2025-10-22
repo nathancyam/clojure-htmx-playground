@@ -4,7 +4,7 @@
             [ragtime.repl :as repl]
             [todo-app.todos :as todos]
             [aero.core :refer [read-config]]
-            [todo-app.core :as core]
+            [endpoint.core :as core]
             [clojure.core :as c]))
 
 (def config

@@ -20,7 +20,7 @@
         cheshire/cheshire {:mvn/version "5.11.0"}}
  :aliases {:dev {:extra-paths ["dev"]
                  :extra-deps {ring/ring-mock {:mvn/version "0.6.1"}}}
-           :run {:main-opts ["-m" "todo-app.core"]}
+           :run {:main-opts ["-m" "endpoint.core"]}
            :cljfmt {:extra-deps {dev.weavejester/cljfmt {:mvn/version "0.14.0"}}
                     :main-opts ["-m" "cljfmt.main"]}
            :repl {:extra-paths ["dev"]
