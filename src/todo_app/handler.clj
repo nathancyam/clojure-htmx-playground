@@ -1,7 +1,7 @@
 (ns todo-app.handler
   (:require
    [clojure.string :as str]
-   [compojure.core :refer [defroutes DELETE GET PATCH POST PUT]]
+   [compojure.core :refer [defroutes DELETE GET PATCH POST PUT context]]
    [compojure.route :as route]
    [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
    [ring.middleware.params :refer [wrap-params]]
@@ -80,9 +80,6 @@
     (catch Exception _
       (error-response "Failed to delete todo" 500))))
 
-(defn my-page []
-  (views.util/html-response (pages/home)))
-
 (defn toggle-todo [id]
   (let [uid (parse-uuid id) todo (todos/get-todo-by-id uid)]
     (if (some? todo)
@@ -96,19 +93,21 @@
       (pages/todo-list-hx)
       (html-response)))
 
+(defroutes todo-app-id-routes
+  (GET "/" [id] (get-todo id))
+  (PUT "/" [id :as request] (update-todo id request))
+  (PATCH "/status" [id] (toggle-todo id))
+  (DELETE "/" [id] (delete-todo id)))
+
 ;; Routes
 (defroutes app-routes
-  (GET "/example" [] (my-page))
   (GET "/todos" [] (-> (todos/get-all-todos)
                        (pages/todos)
                        (html-response)))
-  (GET "/todos/:id" [id] (get-todo id))
   (POST "/todos" request (create-todo request))
+  (context "/todos/:id" [] todo-app-id-routes)
   (POST "/todo" [title]
     (new-todo {:title title}))
-  (PUT "/todos/:id" [id :as request] (update-todo id request))
-  (PATCH "/todo/:id/status" [id] (toggle-todo id))
-  (DELETE "/todos/:id" [id] (delete-todo id))
   (route/not-found {:error "Route not found"}))
 
 ;; Middleware stack
