@@ -21,6 +21,14 @@
  :aliases {:dev {:extra-paths ["dev"]
                  :extra-deps {ring/ring-mock {:mvn/version "0.6.1"}}}
            :run {:main-opts ["-m" "endpoint.core"]}
+           :test
+           {:extra-paths ["test"]
+            :extra-deps  {io.github.cognitect-labs/test-runner
+                          {:git/tag "v0.5.1" :git/sha "dfb30dd"}
+                          org.clojure/core.cache {:mvn/version "1.1.234"}}
+            :exec-fn     cognitect.test-runner.api/test}
+           :runner
+           {:main-opts   ["-m" "cognitect.test-runner"]}
            :cljfmt {:extra-deps {dev.weavejester/cljfmt {:mvn/version "0.14.0"}}
                     :main-opts ["-m" "cljfmt.main"]}
            :repl {:extra-paths ["dev"]
