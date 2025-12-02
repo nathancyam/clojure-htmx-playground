@@ -1,38 +1,37 @@
 (ns todo-app.handler-test
   (:require [clojure.test :refer [deftest is use-fixtures]]
             [ring.mock.request :as mock]
-            [next.jdbc.connection :as connection]
-            [ragtime.next-jdbc :as ragtime-jdbc]
-            [ragtime.repl :as ragtime-repl]
-            [todo-app.handler :refer [routes]])
-  (:import (com.zaxxer.hikari HikariDataSource)))
+            [next.jdbc :as jdbc]
+            [ring.middleware.params :refer [wrap-params]]
+            [test-helper :as helper]
+            [ring.util.codec :as codec]
+            [todo-app.handler :refer [routes]]))
 
-(def ^:dynamic *db* nil)
+(def ^:dynamic *tx* nil)
 
-(def db-spec
-  {:dbtype "postgres"
-   :dbname "todoapp_test"
-   :host "localhost"
-   :username "postgres"
-   :password "postgres"})
+(defn with-rollback [f]
+  (jdbc/with-transaction [tx @helper/test-pool {:rollback-only true}]
+    (binding [*tx* tx]
+      (f))))
 
-(defn setup-db [f]
-  (let [ds (connection/->pool HikariDataSource db-spec)]
-    (try
-      (binding [*db* ds]
-        ;; Run migrations/schema setup
-        (ragtime-repl/migrate {:datastore (ragtime-jdbc/sql-database ds)
-                               :migrations (ragtime-jdbc/load-resources "migrations")})
-        (f))
-      (finally
-        (.close ds)))))
+(use-fixtures :each with-rollback)
 
-(use-fixtures :once setup-db)
+(defn wrap-db [handler]
+  (fn [request]
+    (let [request-with-db (assoc request :db *tx*)]
+      (handler request-with-db))))
 
 (deftest test-additions
   (is (= (+ 1 2) 3))
   (is (= (+ -1 1) 0)))
 
 (deftest test-todo-app-id-routes
-  (let [response (routes (mock/request :post "/todo" {:title "Title"}))]
-    (is (= 201 (:status response)))))
+  (let [handler (-> routes
+                    wrap-params
+                    wrap-db)
+        response (handler (-> (mock/request :post "/todo")
+                              (mock/body (codec/form-encode {:title "Test"}))
+                              (mock/content-type "application/x-www-form-urlencoded")))]
+    (is (= 200 (:status response))))
+  (let [todos (jdbc/execute! *tx* ["SELECT * FROM todos WHERE title = ?" "Test"])]
+    (is (= "Test" (:todos/title (first todos))))))

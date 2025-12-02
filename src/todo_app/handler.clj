@@ -28,7 +28,6 @@
       (error-response "Failed to retrieve todo" 500))))
 
 (defn create-todo [request]
-  (prn (:params request))
   (try
     (let [todo-data (:body request)
           title (get todo-data "title")

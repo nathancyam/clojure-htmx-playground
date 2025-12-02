@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%msg%n"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Logger name="com.zaxxer.hikari" level="off"/>
+    <Logger name="storage.db" level="off"/>
+    <Root level="warn">
+      <AppenderRef ref="Console"/>
+    </Root>
+  </Loggers>
+</Configuration>

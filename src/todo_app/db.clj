@@ -34,7 +34,6 @@
                    (values [with-timestamps])
                    (returning :*)
                    sql/format)]
-     (prn with-timestamps)
      (first (jdbc/execute! db query)))))
 
 (defn update-todo! [id todo-data]
