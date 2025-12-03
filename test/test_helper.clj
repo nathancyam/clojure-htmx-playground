@@ -1,6 +1,5 @@
 (ns test-helper
   (:require [next.jdbc.connection :as connection]
-            [ring.mock :as mock]
             [ragtime.jdbc :as ragtime-jdbc]
             [ragtime.repl :as ragtime-repl])
   (:import (com.zaxxer.hikari HikariDataSource)))
@@ -24,11 +23,6 @@
   (when-let [ds @test-pool]
     (.close ds)
     (reset! test-pool nil)))
-
-(defn with-hx-headers [request]
-  (-> request
-      (mock/header "HX-Request" "true")
-      (mock/header "HX-Boosted" "true")))
 
 ;; Run once on namespace load
 (setup-test-db)

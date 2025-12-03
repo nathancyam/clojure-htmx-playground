@@ -5,6 +5,21 @@
             [crypto.password.bcrypt :as password]
             [next.jdbc :as jdbc]))
 
+(defn- random-bytes [n]
+  (let [b (byte-array n)]
+    (.nextBytes (java.security.SecureRandom.) b)
+    b))
+
+(defn generate-user-token [db user context]
+  (let [query (-> (insert-into :users_tokens)
+                  (values [{:user_id (:users/id user)
+                            :token (random-bytes 32)
+                            :context context
+                            :inserted_at [:now]}])
+                  (returning :*)
+                  sql/format)]
+    (first (jdbc/execute! db query))))
+
 (defn get-all-users
   []
   (let [query (-> (select :*)
@@ -22,7 +37,7 @@
                   sql/format)]
     (first (jdbc/execute! (get-db) query))))
 
-(defn create-user! [user-data]
+(defn create-user! [db user-data]
   (let [query (-> (insert-into :users)
                   (values [(-> user-data
                                (assoc :hashed_password (password/encrypt (:password user-data)))
@@ -32,6 +47,6 @@
                   (returning :*)
                   sql/format)]
     (try
-      (first (jdbc/execute! (get-db) query))
+      (first (jdbc/execute! db query))
       (catch Exception e
         {:failed (.getMessage e)}))))

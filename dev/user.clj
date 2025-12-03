@@ -1,6 +1,5 @@
 (ns user
-  (:require [accounts.db :as accounts]
-            [ragtime.jdbc :as jdbc]
+  (:require [ragtime.jdbc :as jdbc]
             [ragtime.repl :as repl]
             [aero.core :refer [read-config]]
             [endpoint.core :as core]
@@ -12,11 +11,6 @@
 
 (defn migrate []
   (repl/migrate config))
-
-(defn sample-user
-  [email]
-  (accounts/create-user! {:email email
-                          :password "Password123!"}))
 
 (defn start-dev-server
   "Start the development server"

@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [ring.middleware.params :refer [wrap-params]]
             [test-helper :as helper]
+            [web-helpers :as wh]
             [ring.util.codec :as codec]
             [todo-app.handler :refer [routes]]))
 
@@ -32,7 +33,7 @@
         response (handler (-> (mock/request :post "/todo")
                               (mock/body (codec/form-encode {:title "Test"}))
                               (mock/content-type "application/x-www-form-urlencoded")
-                              (helper/with-hx-headers)))]
+                              (wh/with-hx-headers)))]
     (is (= 200 (:status response))))
   (let [todos (jdbc/execute! *tx* ["SELECT * FROM todos WHERE title = ?" "Test"])]
     (is (= "Test" (:todos/title (first todos))))))
