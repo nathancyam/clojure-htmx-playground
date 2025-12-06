@@ -28,7 +28,7 @@
                   sql/format)]
     (first (jdbc/execute! db query))))
 
-(defn authenticate [db email password]
+(defn authenticate! [db email password]
   (if-let [result (get-user-by-email db email)]
     (when (password/check password (:users/hashed_passwod result))
       result)

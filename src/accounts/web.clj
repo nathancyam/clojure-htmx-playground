@@ -29,7 +29,7 @@
 (defroutes routes
   (POST "/login" [email password :as {db :db}]
     (try
-      (prn (a/authenticate db email password))
+      (a/authenticate! db email password)
       (page-response [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
                       [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login Successful"]
                       [:p {:class "text-center text-gray-700"} "Welcome back!"]])
