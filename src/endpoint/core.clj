@@ -8,6 +8,7 @@
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [clojure.core.async :refer [go <!! >!! chan]]
+            [views.response :as res]
             [todo-app.web :as todos]
             [accounts.web :as accounts]))
 
@@ -15,8 +16,16 @@
   (context "/" [] todos/routes)
   (context "/accounts" [] accounts/routes))
 
+(def wrap-hx-header-check
+  (fn [handler]
+    (fn [request]
+      (if (contains? (:headers request) "hx-request")
+        (handler (assoc request :hx-request? true :renderer res/hx-response))
+        (handler (assoc request :renderer res/page-response))))))
+
 (def app
   (-> all-routes
+      wrap-hx-header-check
       wrap-anti-forgery
       (wrap-session {:cookie-attrs {:http-only true :same-site :lax}})
       wrap-params))

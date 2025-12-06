@@ -2,31 +2,45 @@
   (:require
    [accounts.core :as a]
    [compojure.core :refer [defroutes GET POST]]
-   [views.components :refer [csrf-token]]
+   [views.components :refer [csrf-token button input-field]]
    [views.response :refer [hx-response page-response]]))
 
 (defn- login-form
   [form errors]
-  [:form {:hx-post "/accounts/login" :hx-target "#main-wrapper" :hx-swap "outerHTML" :class "flex flex-col gap-4"}
+  [:form {:hx-post "/accounts/login" :class "flex flex-col gap-4"}
    (csrf-token)
-   [:div
-    [:label {:for "email" :class "block text-gray-700 mb-2"} "Username"]
-    [:input {:type "text" :name "email" :value (:email form) :id "email" :class "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"}]]
-   [:div
-    [:label {:for "password" :class "block text-gray-700 mb-2"} "Password"]
-    [:input {:type "password" :name "password" :id "password" :class "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"}]]
+   (input-field {:name "email" :type "text" :label "Email" :value (:email form)})
+   (input-field {:name "password" :type "password" :label "Password" :value nil})
    [:div
     (for [error errors]
       [:p {:class "text-red-500 text-sm mb-2"} error])]
-   [:button {:type "submit" :class "w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"} "Login"]])
+   (button :primary "Login")
+   [:a {:hx-get "/accounts/register" :class "text-blue-500 hover:underline text-center mt-2"} "Don't have an account? Register"]])
 
-(defn login-page
+(defn- login-page
   [form errors]
-  [:div {:id "login-page" :class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
+  [:div {:id "login-page" :hx-target "#main-wrapper" :class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
    [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login"]
    (login-form form errors)])
 
+(defn- register-page
+  [form errors]
+  [:div {:id "register-page" :class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
+   [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Register"]
+   [:form {:hx-post "/accounts/register" :hx-target "#main-wrapper" :hx-swap "outerHTML" :class "flex flex-col gap-4"}
+    (csrf-token)
+    (input-field {:name "email" :type "text" :label "Email" :value (:email form)})
+    (input-field {:name "password" :type "password" :label "Password" :value nil})
+    (input-field {:name "confirm-password" :type "password" :label "Confirm Password" :value nil})
+    [:div
+     (for [error errors]
+       [:p {:class "text-red-500 text-sm mb-2"} error])]
+    (button :primary "Register")]])
+
 (defroutes routes
+  (GET "/register" [:as {render :renderer}]
+    (render (register-page {} [])))
+
   (POST "/login" [email password :as {db :db}]
     (try
       (a/authenticate! db email password)
