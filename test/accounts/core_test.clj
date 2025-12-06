@@ -1,6 +1,6 @@
-(ns accounts.db-test
+(ns accounts.core-test
   (:require [clojure.test :refer [deftest is use-fixtures]]
-            [accounts.db :as accounts]
+            [accounts.core :as accounts]
             [next.jdbc :as jdbc]
             [test-helper :as helper]))
 
