@@ -8,8 +8,8 @@
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [clojure.core.async :refer [go <!! >!! chan]]
-            [todo-app.handler :as todos]
-            [accounts.handler :as accounts]))
+            [todo-app.web :as todos]
+            [accounts.web :as accounts]))
 
 (defroutes all-routes
   (context "/" [] todos/routes)

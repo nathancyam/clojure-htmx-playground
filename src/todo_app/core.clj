@@ -1,4 +1,4 @@
-(ns todo-app.db
+(ns todo-app.core
   (:require [honey.sql :as sql]
             [next.jdbc :as jdbc]
             [honey.sql.helpers :as h :refer [select from order-by where insert-into values returning delete-from]]))

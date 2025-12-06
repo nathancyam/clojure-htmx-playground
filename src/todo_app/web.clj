@@ -1,8 +1,8 @@
-(ns todo-app.handler
+(ns todo-app.web
   (:require
    [compojure.core :refer [defroutes DELETE GET PATCH POST context]]
    [ring.util.response :refer [response status]]
-   [todo-app.db :as todos]
+   [todo-app.core :as todos]
    [todo-app.views :as v]
    [views.response :refer [page-response hx-response]]))
 

@@ -1,4 +1,4 @@
-(ns accounts.handler
+(ns accounts.web
   (:require
    [compojure.core :refer [defroutes GET POST]]
    [views.components :refer [csrf-token]]
