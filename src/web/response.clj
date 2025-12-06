@@ -1,6 +1,6 @@
-(ns views.response
+(ns web.response
   (:require [ring.util.response :refer [header response]]
-            [views.layout :refer [head body]]
+            [web.layout :refer [head body]]
             [hiccup2.core :as h]))
 
 (defn page-response [hiccup-vector]

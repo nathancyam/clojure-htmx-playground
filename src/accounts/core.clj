@@ -1,6 +1,6 @@
 (ns accounts.core
   (:require [honey.sql :as sql]
-            [honey.sql.helpers :refer [select from where insert-into values returning order-by]]
+            [honey.sql.helpers :refer [select from where insert-into values returning]]
             [crypto.password.bcrypt :as password]
             [next.jdbc :as jdbc]))
 
@@ -26,13 +26,15 @@
                   (from :users)
                   (where [:= :email email])
                   sql/format)]
-    (first (jdbc/execute! db query))))
+    (when-let [user (first (jdbc/execute! db query))]
+      (update user :users/email #(.getValue %)))))
 
 (defn authenticate! [db email password]
-  (if-let [result (get-user-by-email db email)]
-    (when (password/check password (:users/hashed_passwod result))
-      result)
-    (throw (Exception. "user not found"))))
+  (if-let [user (get-user-by-email db email)]
+    (if (password/check password (:users/hashed_password user))
+      user
+      (throw (Exception. "Your password is incorrect")))
+    (throw (Exception. "Could not find user with that email"))))
 
 (defn create-user! [db user-data]
   (let [query (-> (insert-into :users)

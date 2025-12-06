@@ -1,4 +1,4 @@
-(ns views.components
+(ns web.components
   (:require
    [hiccup.form :refer [hidden-field]]
    [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]))

@@ -5,10 +5,12 @@
             [storage.db :as db]
             [compojure.core :refer [defroutes context]]
             [ring.middleware.params :refer [wrap-params]]
+            [ring.middleware.nested-params :refer [wrap-nested-params]]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [clojure.core.async :refer [go <!! >!! chan]]
-            [views.response :as res]
+            [web.response :refer [page-response hx-response]]
             [todo-app.web :as todos]
             [accounts.web :as accounts]))
 
@@ -20,15 +22,17 @@
   (fn [handler]
     (fn [request]
       (if (contains? (:headers request) "hx-request")
-        (handler (assoc request :hx-request? true :renderer res/hx-response))
-        (handler (assoc request :renderer res/page-response))))))
+        (handler (assoc request :hx-request? true :renderer hx-response))
+        (handler (assoc request :renderer page-response))))))
 
 (def app
   (-> all-routes
       wrap-hx-header-check
       wrap-anti-forgery
-      (wrap-session {:cookie-attrs {:http-only true :same-site :lax}})
-      wrap-params))
+      wrap-keyword-params
+      wrap-nested-params
+      wrap-params
+      (wrap-session {:cookie-attrs {:http-only true :same-site :lax}})))
 
 (defonce signal (chan))
 

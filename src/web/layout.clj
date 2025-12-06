@@ -1,4 +1,4 @@
-(ns views.layout
+(ns web.layout
   (:require [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]))
 
 (def head

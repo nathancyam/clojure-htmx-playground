@@ -1,6 +1,6 @@
 (ns todo-app.views
   (:require
-   [views.components :refer [button-color]]))
+   [web.components :refer [button-color]]))
 
 (defn todo-component [todo]
   (let [id (:todos/id todo)

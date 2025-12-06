@@ -4,7 +4,7 @@
    [ring.util.response :refer [response status]]
    [todo-app.core :as todos]
    [todo-app.views :as v]
-   [views.response :refer [page-response hx-response]]))
+   [web.response :refer [page-response hx-response]]))
 
 (defn error-response [message & [status-code]]
   (-> (response {:error message})
