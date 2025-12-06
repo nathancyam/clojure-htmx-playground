@@ -18,7 +18,7 @@
 (def app
   (-> all-routes
       wrap-anti-forgery
-      wrap-session
+      (wrap-session {:cookie-attrs {:http-only true :same-site :lax}})
       wrap-params))
 
 (defonce signal (chan))
