@@ -33,8 +33,8 @@
   (if-let [user (get-user-by-email db email)]
     (if (password/check password (:users/hashed_password user))
       user
-      (throw (Exception. "Your password is incorrect")))
-    (throw (Exception. "Could not find user with that email"))))
+      (throw (ex-info "Your password is incorrect" {:reason :invalid-password})))
+    (throw (ex-info "Could not find user with that email" {:reason :not-found}))))
 
 (defn create-user! [db user-data]
   (let [query (-> (insert-into :users)
