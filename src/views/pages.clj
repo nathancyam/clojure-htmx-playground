@@ -1,11 +1,12 @@
 (ns views.pages
-  (:require [views.components :as c]
+  (:require [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [views.util :refer [render]]))
 
 (def head
   [:head [:title "example app"]
    [:script {:src "https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.min.js" :defer true}]
-   [:script {:src "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" :defer true}]])
+   [:script {:src "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" :defer true}]
+   [:meta {:csrf-token *anti-forgery-token*}]])
 
 (defn- body [content]
   [:body
@@ -15,17 +16,3 @@
 
 (defn layout [content]
   (render [:html head (body content)]))
-
-(defn home []
-  (layout [:span {:class "example"} "Ahhh"]))
-
-(defn todo-list [todos]
-  [:section.space-y-2 {:id "todo-list"}
-   c/new-todo
-   (for [todo todos] (c/todo-component todo))])
-
-(defn todo-list-hx [todos]
-  (render (todo-list todos)))
-
-(defn todos [todos]
-  (layout (todo-list todos)))
