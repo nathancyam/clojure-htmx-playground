@@ -1,7 +1,6 @@
 (ns todo-app.db
   (:require [honey.sql :as sql]
             [next.jdbc :as jdbc]
-            [storage.db :refer [get-db]]
             [honey.sql.helpers :as h :refer [select from order-by where insert-into values returning delete-from]]))
 
 (defn now-timestamp []
