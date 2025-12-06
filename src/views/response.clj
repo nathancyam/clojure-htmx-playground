@@ -3,11 +3,8 @@
             [views.layout :refer [head body]]
             [hiccup2.core :as h]))
 
-(defn render [tree-vector]
-  (h/html tree-vector))
-
-(defn page-response [content]
-  (-> (render [:html head (body content)])
+(defn page-response [hiccup-vector]
+  (-> (h/html [:html head (body hiccup-vector)])
       str
       (response)
       (header "Content-Type" "text/html")))

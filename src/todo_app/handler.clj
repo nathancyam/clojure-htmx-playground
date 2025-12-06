@@ -34,7 +34,7 @@
   (todos/create-todo! db data)
   (-> db
       (todos/get-all-todos)
-      (v/todo-list-hx)
+      (v/todo-list)
       (page-response)))
 
 (defroutes todo-routes
@@ -44,7 +44,7 @@
 ;; Routes
 (defroutes routes
   (GET "/todos" [:as {db :db}] (-> db (todos/get-all-todos)
-                                   (v/todos)
+                                   (v/todo-list)
                                    (page-response)))
   (context "/todos/:id" [] todo-routes)
   (POST "/todo" [title :as {db :db}]

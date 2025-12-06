@@ -1,8 +1,6 @@
 (ns todo-app.views
   (:require
-   [views.components :refer [button-color]]
-   [views.pages :refer [layout]]
-   [views.util :refer [render]]))
+   [views.components :refer [button-color]]))
 
 (defn todo-component [todo]
   (let [id (:todos/id todo)
@@ -33,9 +31,3 @@
   [:section.space-y-2 {:id "todo-list"}
    new-todo
    (for [todo todos] (todo-component todo))])
-
-(defn todo-list-hx [todos]
-  (render (todo-list todos)))
-
-(defn todos [todos]
-  (layout (todo-list todos)))
