@@ -4,7 +4,7 @@
    [ring.util.response :refer [response status]]
    [todo-app.db :as todos]
    [todo-app.views :as v]
-   [views.util :refer [html-response render]]))
+   [views.response :refer [page-response hx-response]]))
 
 (defn error-response [message & [status-code]]
   (-> (response {:error message})
@@ -27,7 +27,7 @@
   (let [uid (parse-uuid id) todo (todos/get-todo-by-id db uid)]
     (if (some? todo)
       (let [updated (todos/update-todo! db uid {:completed (not (:todos/completed todo))})]
-        (html-response (render (v/todo-component updated))))
+        (hx-response (v/todo-component updated)))
       (response {:status 404}))))
 
 (defn new-todo [db data]
@@ -35,7 +35,7 @@
   (-> db
       (todos/get-all-todos)
       (v/todo-list-hx)
-      (html-response)))
+      (page-response)))
 
 (defroutes todo-routes
   (PATCH "/status" [id :as {db :db}] (toggle-todo db id))
@@ -45,7 +45,7 @@
 (defroutes routes
   (GET "/todos" [:as {db :db}] (-> db (todos/get-all-todos)
                                    (v/todos)
-                                   (html-response)))
+                                   (page-response)))
   (context "/todos/:id" [] todo-routes)
   (POST "/todo" [title :as {db :db}]
     (new-todo db {:title title})))

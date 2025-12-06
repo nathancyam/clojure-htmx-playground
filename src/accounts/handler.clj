@@ -2,8 +2,7 @@
   (:require
    [clojure.string :as str]
    [compojure.core :refer [defroutes GET POST]]
-   [views.pages :refer [layout]]
-   [views.util :refer [html-response]]))
+   [views.response :refer [page-response]]))
 
 (defn login-page [csrf-token]
   (let [token (-> csrf-token
@@ -26,11 +25,10 @@
   (POST "/login" [username password]
     (prn username)
     (prn password)
-    (html-response (layout
-                    [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
-                     [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login Successful"]
-                     [:p {:class "text-center text-gray-700"} "Welcome back!"]])))
+    (page-response [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
+                    [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login Successful"]
+                    [:p {:class "text-center text-gray-700"} "Welcome back!"]]))
 
   (GET "/login" request
     (prn request)
-    (html-response (layout (login-page (:anti-forgery-token request))))))
+    (page-response (login-page (:anti-forgery-token request)))))
