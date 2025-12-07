@@ -10,14 +10,16 @@
     b))
 
 (defn generate-user-token [db user context]
-  (let [query (-> (insert-into :users_tokens)
+  (let [token (random-bytes 32)
+        query (-> (insert-into :users_tokens)
                   (values [{:user_id (:users/id user)
-                            :token (random-bytes 32)
+                            :token token
                             :context context
                             :inserted_at [:now]}])
                   (returning :*)
                   sql/format)]
-    (first (jdbc/execute! db query))))
+    (jdbc/execute! db query)
+    token))
 
 (defn get-user-by-email
   "Get a user by their email address."

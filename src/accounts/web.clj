@@ -2,8 +2,7 @@
   (:require
    [accounts.core :as a]
    [compojure.core :refer [defroutes GET POST]]
-   [web.components :refer [csrf-token button input-field]]
-   [web.response :refer [page-response]]))
+   [web.components :refer [csrf-token button input-field]]))
 
 (defn- login-form
   [form errors]
@@ -43,7 +42,6 @@
 
   (POST "/register" [register :as {db :db render :renderer}]
     (let [{:keys [email password confirm-password]} register]
-      (prn register)
       (if (not= password confirm-password)
         (render (register-page {:email email} ["Passwords do not match"]))
         (try
@@ -54,20 +52,23 @@
           (catch Exception _
             (render (register-page {:email email} ["Email already in use"])))))))
 
-  (POST "/login" [login :as {db :db render :renderer}]
+  (POST "/login" [login :as {db :db render :renderer session :session}]
     (let [{:keys [email password]} login]
       (try
-        (a/authenticate! db email password)
-        ;; (let [{:keys {user token}} (a/authenticate! db email password)]
-        ;;
-        ;;
-        ;;   )
-        (page-response [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
-                        [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login Successful"]
-                        [:p {:class "text-center text-gray-700"} "Welcome back!"]])
+        (let [{:keys [token]} (a/authenticate! db email password)
+              regenerated-session (vary-meta session assoc :recreate true)
+              encoded-token (-> (java.util.Base64/getEncoder)
+                                (.encode token)
+                                (String.))
+              auth-session (assoc regenerated-session :token encoded-token)]
+          (render #(assoc % :session auth-session)
+                  [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
+                   [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login Successful"]
+                   [:p {:class "text-center text-gray-700"} "Welcome back!"]]))
         (catch Exception ex
           (prn ex)
           (render (login-page {:email email} [(.getMessage ex)]))))))
 
-  (GET "/login" []
-    (page-response (login-page {} []))))
+  (GET "/login" {render :renderer session :session}
+    (prn session)
+    (render (login-page {} []))))

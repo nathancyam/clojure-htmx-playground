@@ -9,7 +9,7 @@
        str
        (response)
        (header "Content-Type" "text/html")))
-  ([hiccup-vector session-callback]
+  ([session-callback hiccup-vector]
    (session-callback (page-response hiccup-vector))))
 
 (defn hx-response
@@ -18,5 +18,5 @@
        str
        (response)
        (header "Content-Type" "text/html")))
-  ([hiccup-vector session-callback]
+  ([session-callback hiccup-vector]
    (session-callback (hx-response hiccup-vector))))
