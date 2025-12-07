@@ -1,6 +1,6 @@
 (ns accounts.core
   (:require [honey.sql :as sql]
-            [honey.sql.helpers :refer [select from where insert-into values returning]]
+            [honey.sql.helpers :refer [select from where insert-into join values returning]]
             [crypto.password.bcrypt :as password]
             [next.jdbc :as jdbc]))
 
@@ -27,6 +27,16 @@
   (let [query (-> (select :*)
                   (from :users)
                   (where [:= :email email])
+                  sql/format)]
+    (when-let [user (first (jdbc/execute! db query))]
+      (update user :users/email #(.getValue %)))))
+
+(defn get-user-by-session-token [db token]
+  (let [query (-> (select [:u.*])
+                  (from [:users_tokens :ut])
+                  (where [:= :ut.token token]
+                         [:= :ut.context "session"])
+                  (join [:users :u] [:= :u.id :ut.user_id])
                   sql/format)]
     (when-let [user (first (jdbc/execute! db query))]
       (update user :users/email #(.getValue %)))))

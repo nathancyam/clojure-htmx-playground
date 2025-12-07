@@ -36,6 +36,15 @@
        [:p {:class "text-red-500 text-sm mb-2"} error])]
     (button :primary "Register")]])
 
+(defn wrap-user-session [handler]
+  (fn [{:keys [db session] :as request}]
+    (prn (:token session nil))
+    (let [user (when-let [session-token (:token session nil)]
+                 (when-let [token (some-> (java.util.Base64/getDecoder)
+                                          (.decode session-token))]
+                   (a/get-user-by-session-token db token)))]
+      (handler (assoc request :current-user user)))))
+
 (defroutes routes
   (GET "/register" [:as {render :renderer}]
     (render (register-page {} [])))
@@ -69,6 +78,5 @@
           (prn ex)
           (render (login-page {:email email} [(.getMessage ex)]))))))
 
-  (GET "/login" {render :renderer session :session}
-    (prn session)
+  (GET "/login" {render :renderer}
     (render (login-page {} []))))

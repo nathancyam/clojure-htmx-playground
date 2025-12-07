@@ -39,6 +39,7 @@
 (defn app [config]
   (let [secret (.decode (Base64/getDecoder) (:session-secret config))]
     (-> all-routes
+        accounts/wrap-user-session
         wrap-db
         wrap-hx-header-check
         wrap-anti-forgery
