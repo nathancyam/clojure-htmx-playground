@@ -1,6 +1,7 @@
 (ns accounts.web
   (:require
    [accounts.core :as a]
+   [ring.util.response :refer [response]]
    [compojure.core :refer [defroutes GET POST]]
    [web.components :refer [csrf-token button input-field]]))
 
@@ -47,7 +48,7 @@
 
 (defroutes routes
   (GET "/register" [:as {render :renderer}]
-    (render (register-page {} [])))
+    (response (render (register-page {} []))))
 
   (POST "/register" [register :as {db :db render :renderer}]
     (let [{:keys [email password confirm-password]} register]
@@ -55,9 +56,9 @@
         (render (register-page {:email email} ["Passwords do not match"]))
         (try
           (a/create-user! db {:email email :password password})
-          (render [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
-                   [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Registration Successful"]
-                   [:p {:class "text-center text-gray-700"} "You can now log in with your new account."]])
+          (response (render [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
+                             [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Registration Successful"]
+                             [:p {:class "text-center text-gray-700"} "You can now log in with your new account."]]))
           (catch Exception _
             (render (register-page {:email email} ["Email already in use"])))))))
 
@@ -70,13 +71,13 @@
                                 (.encode token)
                                 (String.))
               auth-session (assoc regenerated-session :token encoded-token)]
-          (render #(assoc % :session auth-session)
-                  [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
-                   [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login Successful"]
-                   [:p {:class "text-center text-gray-700"} "Welcome back!"]]))
+          (-> response
+              (render [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
+                       [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login Successful"]
+                       [:p {:class "text-center text-gray-700"} "Welcome back!"]])
+              (assoc :session auth-session)))
         (catch Exception ex
-          (prn ex)
           (render (login-page {:email email} [(.getMessage ex)]))))))
 
   (GET "/login" {render :renderer}
-    (render (login-page {} []))))
+    (response (render (login-page {} [])))))
