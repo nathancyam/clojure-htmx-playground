@@ -62,9 +62,7 @@
         (render (register-page {:email email} ["Passwords do not match"]))
         (try
           (a/create-user! db {:email email :password password})
-          (response (render [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
-                             [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Registration Successful"]
-                             [:p {:class "text-center text-gray-700"} "You can now log in with your new account."]]))
+          (redirect "/accounts/login")
           (catch Exception _
             (response (render (register-page {:email email} ["Email already in use"]))))))))
 
