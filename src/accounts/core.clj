@@ -1,6 +1,6 @@
 (ns accounts.core
   (:require [honey.sql :as sql]
-            [honey.sql.helpers :refer [select from where insert-into join values returning]]
+            [honey.sql.helpers :refer [select from where insert-into join values returning delete-from]]
             [crypto.password.bcrypt :as password]
             [next.jdbc :as jdbc]))
 
@@ -40,6 +40,16 @@
                   sql/format)]
     (when-let [user (first (jdbc/execute! db query))]
       (update user :users/email #(.getValue %)))))
+
+(defn decode-token [base-encoded-token]
+  (.decode (java.util.Base64/getDecoder) base-encoded-token))
+
+(defn delete-user-token [db token]
+  (let [query (-> (delete-from :users_tokens)
+                  (where [:= :token token]
+                         [:= :context "session"])
+                  sql/format)]
+    (jdbc/execute! db query)))
 
 (defn authenticate! [db email password]
   (let [user (get-user-by-email db email)

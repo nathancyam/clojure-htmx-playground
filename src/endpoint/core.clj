@@ -4,7 +4,7 @@
    [aero.core :refer [read-config]]
    [clojure.core.async :refer [<!! >!! chan go]]
    [clojure.tools.logging :as log]
-   [compojure.core :refer [context defroutes]]
+   [compojure.core :refer [context defroutes GET]]
    [ring.adapter.jetty :refer [run-jetty]]
    [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
    [ring.middleware.keyword-params :refer [wrap-keyword-params]]
@@ -20,6 +20,10 @@
    [java.util Base64]))
 
 (defroutes all-routes
+  (GET "/favicon.ico" []
+    {:status 204
+     :headers {}
+     :body ""})
   (context "/" [] todos/routes)
   (context "/accounts" [] accounts/routes))
 

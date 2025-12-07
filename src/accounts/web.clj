@@ -2,8 +2,8 @@
   (:require
    [accounts.core :as a]
    [ring.util.response :refer [response redirect]]
-   [compojure.core :refer [defroutes GET POST]]
-   [web.components :refer [csrf-token button input-field]]))
+   [compojure.core :refer [defroutes GET POST DELETE]]
+   [web.components :refer [csrf-token button input-field hx-csrf-header]]))
 
 (defn- login-form
   [form errors]
@@ -14,7 +14,7 @@
    [:div
     (for [error errors]
       [:p {:class "text-red-500 text-sm mb-2"} error])]
-   (button :primary "Login")
+   (button :primary "Login" {:type "submit"})
    [:a {:hx-get "/accounts/register" :hx-push-url "true" :class "text-blue-500 hover:underline text-center mt-2"} "Don't have an account? Register"]])
 
 (defn- login-page
@@ -40,17 +40,18 @@
 (defn wrap-user-session [handler]
   (fn [{:keys [db session] :as request}]
     (let [user (when-let [session-token (:token session nil)]
-                 (when-let [token (some-> (java.util.Base64/getDecoder)
-                                          (.decode session-token))]
+                 (when-let [token (some-> (a/decode-token session-token))]
                    (a/get-user-by-session-token db token)))]
       (handler (assoc request :current-user user)))))
 
 (defroutes routes
   (GET "/dashboard" {render :renderer current-user :current-user}
     (if current-user
-      (response (render [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
+      (response (render [:div (hx-csrf-header {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"})
+                         (csrf-token)
                          [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Dashboard"]
-                         [:p {:class "text-center text-gray-700"} (str "Welcome, " (:users/email current-user) "!")]]))
+                         [:p {:class "text-center text-gray-700"} (str "Welcome, " (:users/email current-user) "!")]
+                         (button :danger "Logout" {:type :submit :hx-delete "/accounts/session"})]))
       (redirect "/accounts/login")))
 
   (GET "/register" [:as {render :renderer}]
@@ -80,10 +81,16 @@
                                 (.encode token)
                                 (String.))
               auth-session (assoc regenerated-session :token encoded-token)]
-          (-> (response (render [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
-                                 [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login Successful"]
-                                 [:p {:class "text-center text-gray-700"} "Welcome back!"]]))
+          (-> (redirect "/accounts/dashboard")
               (assoc :session auth-session)))
         (catch Exception ex
-          (response (render (login-page {:email email} [(.getMessage ex)]))))))))
+          (response (render (login-page {:email email} [(.getMessage ex)])))))))
+
+  (DELETE "/session" {{:keys [token]} :session db :db}
+    (prn token)
+    (let [decoded-token (some-> (a/decode-token token))]
+      (a/delete-user-token db decoded-token))
+    (-> (redirect "/accounts/login")
+        (assoc :headers {"HX-Redirect" "/accounts/login"})
+        (assoc :session nil))))
 
