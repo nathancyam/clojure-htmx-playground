@@ -4,4 +4,5 @@
            :dbname "todoapp_dev"
            :host "localhost"
            :username "postgres"
-           :password "postgres"}}
+           :password "postgres"}
+ :session-secret #env SECRET_KEY_BASE}

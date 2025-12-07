@@ -1,9 +1,10 @@
 (ns user
-  (:require [ragtime.jdbc :as jdbc]
-            [ragtime.repl :as repl]
-            [aero.core :refer [read-config]]
-            [endpoint.core :as core]
-            [clojure.core :as c]))
+  (:require
+   [aero.core :refer [read-config]]
+   [clojure.core :as c]
+   [endpoint.core :as core]
+   [ragtime.jdbc :as jdbc]
+   [ragtime.repl :as repl]))
 
 (def config
   {:datastore  (jdbc/sql-database {:connection-uri (-> (read-config "config.edn") :migrations :uri)})

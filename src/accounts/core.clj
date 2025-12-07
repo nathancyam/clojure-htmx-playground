@@ -30,11 +30,21 @@
       (update user :users/email #(.getValue %)))))
 
 (defn authenticate! [db email password]
-  (if-let [user (get-user-by-email db email)]
-    (if (password/check password (:users/hashed_password user))
-      user
-      (throw (ex-info "Your password is incorrect" {:reason :invalid-password})))
-    (throw (ex-info "Could not find user with that email" {:reason :not-found}))))
+  (let [user (get-user-by-email db email)
+        _ (when-not user
+            (throw (ex-info "Could not find user with that email"
+                            {:reason :not-found})))
+
+        valid? (password/check password (:users/hashed_password user))
+        _ (when-not valid?
+            (throw (ex-info "Your password is incorrect"
+                            {:reason :invalid-password})))
+
+        token (generate-user-token db user "session")
+        _ (when-not token
+            (throw (ex-info "Could not generate user token"
+                            {:reason :token-generation-failed})))]
+    {:user user :token token}))
 
 (defn create-user! [db user-data]
   (let [query (-> (insert-into :users)

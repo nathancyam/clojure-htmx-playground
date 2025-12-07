@@ -18,3 +18,4 @@ profiles.clj
 .cpcache
 .clj-kondo
 .calva
+mise.local.toml
