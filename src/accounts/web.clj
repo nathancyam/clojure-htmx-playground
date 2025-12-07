@@ -1,7 +1,7 @@
 (ns accounts.web
   (:require
    [accounts.core :as a]
-   [ring.util.response :refer [response]]
+   [ring.util.response :refer [response redirect]]
    [compojure.core :refer [defroutes GET POST]]
    [web.components :refer [csrf-token button input-field]]))
 
@@ -39,7 +39,6 @@
 
 (defn wrap-user-session [handler]
   (fn [{:keys [db session] :as request}]
-    (prn (:token session nil))
     (let [user (when-let [session-token (:token session nil)]
                  (when-let [token (some-> (java.util.Base64/getDecoder)
                                           (.decode session-token))]
@@ -47,6 +46,13 @@
       (handler (assoc request :current-user user)))))
 
 (defroutes routes
+  (GET "/dashboard" {render :renderer current-user :current-user}
+    (if current-user
+      (response (render [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
+                         [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Dashboard"]
+                         [:p {:class "text-center text-gray-700"} (str "Welcome, " (:users/email current-user) "!")]]))
+      (redirect "/accounts/login")))
+
   (GET "/register" [:as {render :renderer}]
     (response (render (register-page {} []))))
 
@@ -60,7 +66,12 @@
                              [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Registration Successful"]
                              [:p {:class "text-center text-gray-700"} "You can now log in with your new account."]]))
           (catch Exception _
-            (render (register-page {:email email} ["Email already in use"])))))))
+            (response (render (register-page {:email email} ["Email already in use"]))))))))
+
+  (GET "/login" {render :renderer current-user :current-user}
+    (if current-user
+      (redirect "/accounts/dashboard")
+      (response (render (login-page {} [])))))
 
   (POST "/login" [login :as {db :db render :renderer session :session}]
     (let [{:keys [email password]} login]
@@ -71,13 +82,10 @@
                                 (.encode token)
                                 (String.))
               auth-session (assoc regenerated-session :token encoded-token)]
-          (-> response
-              (render [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
-                       [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login Successful"]
-                       [:p {:class "text-center text-gray-700"} "Welcome back!"]])
+          (-> (response (render [:div {:class "max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md"}
+                                 [:h2 {:class "text-2xl font-bold mb-4 text-center"} "Login Successful"]
+                                 [:p {:class "text-center text-gray-700"} "Welcome back!"]]))
               (assoc :session auth-session)))
         (catch Exception ex
-          (render (login-page {:email email} [(.getMessage ex)]))))))
+          (response (render (login-page {:email email} [(.getMessage ex)]))))))))
 
-  (GET "/login" {render :renderer}
-    (response (render (login-page {} [])))))
