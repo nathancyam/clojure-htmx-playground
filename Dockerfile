@@ -16,7 +16,11 @@ RUN clojure -T:build uber
 FROM eclipse-temurin:25-jre-noble
 WORKDIR /app
 
-RUN groupadd --system app && useradd --system --gid app --no-create-home app
+# curl is only here for the HEALTHCHECK below.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system app && useradd --system --gid app --no-create-home app
 COPY --from=build /app/target/app.jar ./app.jar
 USER app
 
@@ -24,9 +28,17 @@ USER app
 ENV PORT=3000
 EXPOSE 3000
 
+HEALTHCHECK --start-period=30s --interval=30s --timeout=3s \
+    CMD curl -fsS "http://localhost:${PORT}/healthz" || exit 1
+
 # Arguments after the image name go to -main:
 #   docker run <image>           start the web server
 #   docker run <image> migrate   apply pending migrations and exit
 # Exec form keeps java as PID 1, so `docker stop` (SIGTERM) runs the
 # shutdown hook that stops Jetty and closes the connection pool.
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "/app/app.jar"]
+#   CrashOnOutOfMemoryError: exit instead of limping on, so it gets restarted
+# Extra JVM flags can be passed at run time with JDK_JAVA_OPTIONS.
+ENTRYPOINT ["java", \
+    "-XX:MaxRAMPercentage=75", \
+    "-XX:+CrashOnOutOfMemoryError", \
+    "-jar", "/app/app.jar"]

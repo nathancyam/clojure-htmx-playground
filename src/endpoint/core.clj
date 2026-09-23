@@ -6,12 +6,16 @@
             [clojure.tools.logging :as log]
             [storage.db :as db]
             [storage.migrations :as migrations]
-            [compojure.core :refer [defroutes context]]
+            [compojure.core :refer [defroutes context GET]]
             [compojure.route :as route]
             [ring.middleware.params :refer [wrap-params]]
             [todo-app.handler :as todos]))
 
 (defroutes all-routes
+  ;; Liveness check for Docker's HEALTHCHECK and load balancers: answers
+  ;; while the server can handle requests. Deliberately doesn't touch the
+  ;; database, so a database outage doesn't get the app restarted.
+  (GET "/healthz" [] {:status 200 :headers {"Content-Type" "text/plain"} :body "ok"})
   (context "/" [] todos/routes)
   (route/not-found "Not found"))
 
