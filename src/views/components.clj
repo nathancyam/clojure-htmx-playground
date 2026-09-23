@@ -25,7 +25,10 @@
                :hx-delete (str "/todos/" id)} "Delete"]]))
 
 (def new-todo
-  [:div {:class "flex gap-2 mb-6"}
+  [:form {:class "flex gap-2 mb-6" :hx-post "/todo" :hx-target "#todo-list" :hx-swap "outerHTML"}
    [:input {:name "title"
+            :required true
+            :pattern ".*\\S.*"
+            :title "Title can't be blank"
             :class "flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"}]
-   [:button {:class (button-color "blue") :hx-post "/todo" :hx-target "#todo-list" :hx-swap "outerHTML" :hx-include "previous input[name='title']"} "Save"]])
+   [:button {:type "submit" :class (button-color "blue")} "Save"]])

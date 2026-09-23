@@ -94,10 +94,13 @@
     (error-response "Invalid todo ID format" 400)))
 
 (defn new-todo [db data]
-  (todos/create-todo! db data)
-  (-> (todos/get-all-todos)
-      (pages/todo-list-hx)
-      (html-response)))
+  (if (str/blank? (:title data))
+    (error-response "Title is required" 400)
+    (do
+      (todos/create-todo! db data)
+      (-> (todos/get-all-todos)
+          (pages/todo-list-hx)
+          (html-response)))))
 
 (defroutes todo-app-id-routes
   (GET "/" [id] (get-todo id))
