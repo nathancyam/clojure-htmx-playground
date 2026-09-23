@@ -14,6 +14,8 @@
       {:type "checkbox"
        :class "w-5 h-5 text-blue-500 rounded cursor-pointer"
        :checked completed?
+       :hx-target (str "#" html-id)
+       :hx-swap "outerHTML"
        :hx-patch (str "/todos/" id "/status")}]
      [:span {:class "flex-1 text-gray-700"} title]
      [:button {:type "button"
