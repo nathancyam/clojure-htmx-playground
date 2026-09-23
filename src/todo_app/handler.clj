@@ -46,7 +46,11 @@
   (try
     (let [todo-data (:body request)
           uuid-id (parse-uuid id)]
-      (if-let [_existing-todo (todos/get-todo-by-id uuid-id)]
+      (cond
+        (nil? uuid-id)
+        (error-response "Invalid todo ID format" 400)
+
+        (todos/get-todo-by-id uuid-id)
         (let [updated-data (-> {}
                                (cond-> (contains? todo-data "title")
                                  (assoc :title (get todo-data "title")))
@@ -58,6 +62,8 @@
             (let [updated-todo (todos/update-todo! uuid-id updated-data)]
               (json-response updated-todo))
             (error-response "No valid fields to update" 400)))
+
+        :else
         (error-response "Todo not found" 404)))
     (catch Exception _
       (error-response "Failed to update todo" 500))))
@@ -65,22 +71,27 @@
 (defn delete-todo [id]
   (try
     (let [uuid-id (parse-uuid id)]
-      (if (todos/get-todo-by-id uuid-id)
+      (cond
+        (nil? uuid-id)
+        (error-response "Invalid todo ID format" 400)
+
+        (todos/get-todo-by-id uuid-id)
         (do
           (todos/delete-todo! uuid-id)
           (status (response "") 200))
+
+        :else
         (error-response "Todo not found" 404)))
-    (catch IllegalArgumentException _
-      (error-response "Invalid todo ID format" 400))
     (catch Exception _
       (error-response "Failed to delete todo" 500))))
 
 (defn toggle-todo [id]
-  (let [uid (parse-uuid id) todo (todos/get-todo-by-id uid)]
-    (if (some? todo)
+  (if-let [uid (parse-uuid id)]
+    (if-let [todo (todos/get-todo-by-id uid)]
       (let [updated (todos/update-todo! uid {:completed (not (:todos/completed todo))})]
         (html-response (render (components/todo-component updated))))
-      (response {:status 404}))))
+      (error-response "Todo not found" 404))
+    (error-response "Invalid todo ID format" 400)))
 
 (defn new-todo [db data]
   (todos/create-todo! db data)

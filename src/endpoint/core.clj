@@ -5,11 +5,13 @@
             [clojure.tools.logging :as log]
             [storage.db :as db]
             [compojure.core :refer [defroutes context]]
+            [compojure.route :as route]
             [ring.middleware.params :refer [wrap-params]]
             [todo-app.handler :as todos]))
 
 (defroutes all-routes
-  (context "/" [] todos/routes))
+  (context "/" [] todos/routes)
+  (route/not-found "Not found"))
 
 (def app
   (-> all-routes
