@@ -6,7 +6,6 @@
             [storage.db :as db]
             [compojure.core :refer [defroutes context]]
             [ring.middleware.params :refer [wrap-params]]
-            [clojure.core.async :refer [go <!! >!! chan]]
             [todo-app.handler :as todos]))
 
 (defroutes all-routes
@@ -17,8 +16,6 @@
       (wrap-json-body {:keywords? false})
       wrap-params
       wrap-json-response))
-
-(defonce signal (chan))
 
 (defonce dev-server (atom nil))
 
@@ -35,28 +32,23 @@
     (log/info "Starting server on port" {:port port})
     (let [server (run-jetty (wrap-reload (wrap-db #'app)) {:port port :join? false})]
       (reset! dev-server server)
-      (server))))
+      server)))
 
 (defn reload-dev-server []
   (.stop @dev-server)
   (start-dev-server))
 
 (defn -main []
-  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))
-        app (app)]
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
     (db/init-db!)
     (log/info "Starting server on port" {:port port})
-    (.addShutdownHook
-     (Runtime/getRuntime)
-     (Thread. (fn []
-                (log/info "Sending exit signal")
-                (>!! signal :shutdown))))
-    (let [server (run-jetty (wrap-db app) {:port port})]
-      (go
-        (log/info "Started server on port " port " and waiting for shutdown signal...")
-        (<!! signal)
-        (println "Shutting down server...")
-        (.stop server)
-        (println "Closing database connections...")
-        (db/close)
-        (println "Server stopped.")))))
+    (let [server (run-jetty (wrap-db app) {:port port :join? false})]
+      (.addShutdownHook
+       (Runtime/getRuntime)
+       (Thread. (fn []
+                  (println "Shutting down server...")
+                  (.stop server)
+                  (println "Closing database connections...")
+                  (db/close)
+                  (println "Server stopped."))))
+      (.join server))))
