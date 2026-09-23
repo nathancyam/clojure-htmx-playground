@@ -19,38 +19,42 @@
       wrap-params
       wrap-json-response))
 
-(defonce dev-server (atom nil))
+(defonce dev-system (atom nil))
 
-(defn wrap-db [handler]
+(defn wrap-db [handler db]
   (fn [request]
-    (let [db-conn (db/get-db)
-          request-with-db (assoc request :db db-conn)]
-      (handler request-with-db))))
+    (handler (assoc request :db db))))
 
 (defn start-dev-server []
-  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))
+        pool (db/make-pool)]
     (log/info "Starting server in development mode...")
-    (db/init-db!)
     (log/info "Starting server on port" {:port port})
-    (let [server (run-jetty (wrap-reload (wrap-db #'app)) {:port port :join? false})]
-      (reset! dev-server server)
+    (let [server (run-jetty (wrap-reload (wrap-db #'app pool)) {:port port :join? false})]
+      (reset! dev-system {:server server :db pool})
       server)))
 
+(defn stop-dev-server []
+  (when-let [{:keys [server db]} @dev-system]
+    (.stop server)
+    (db/close db)
+    (reset! dev-system nil)))
+
 (defn reload-dev-server []
-  (.stop @dev-server)
+  (stop-dev-server)
   (start-dev-server))
 
 (defn -main []
-  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
-    (db/init-db!)
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))
+        pool (db/make-pool)]
     (log/info "Starting server on port" {:port port})
-    (let [server (run-jetty (wrap-db app) {:port port :join? false})]
+    (let [server (run-jetty (wrap-db app pool) {:port port :join? false})]
       (.addShutdownHook
        (Runtime/getRuntime)
        (Thread. (fn []
                   (println "Shutting down server...")
                   (.stop server)
                   (println "Closing database connections...")
-                  (db/close)
+                  (db/close pool)
                   (println "Server stopped."))))
       (.join server))))

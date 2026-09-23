@@ -7,19 +7,13 @@
 (def db-spec
   (-> (read-config "config.edn") :db-spec))
 
-(defonce datasource (atom nil))
+(defn make-pool
+  "Create a connection pool. The caller owns it and must `close` it."
+  ([] (make-pool db-spec))
+  ([spec]
+   (log/info "Connecting to database...")
+   (connection/->pool HikariDataSource spec)))
 
-(defn init-db! []
-  (log/info "Connecting to database...")
-  (when @datasource
-    (.close @datasource))
-  (reset! datasource (connection/->pool HikariDataSource db-spec)))
-
-(defn get-db []
-  (when-not @datasource
-    (init-db!))
-  {:datasource @datasource})
-
-(defn close []
-  (when @datasource
-    (.close @datasource)))
+(defn close [^HikariDataSource pool]
+  (when pool
+    (.close pool)))
