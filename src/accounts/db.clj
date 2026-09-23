@@ -17,7 +17,9 @@
   [db email]
   (let [query (-> (select :*)
                   (from :users)
-                  (where [:= :email email])
+                  ;; JDBC sends a varchar, which would make Postgres compare as
+                  ;; text; cast so the citext column matches case-insensitively.
+                  (where [:= :email [:cast email :citext]])
                   sql/format)]
     (first (jdbc/execute! db query))))
 
