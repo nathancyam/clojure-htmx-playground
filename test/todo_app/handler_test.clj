@@ -4,10 +4,9 @@
             [clojure.test :refer [deftest is testing use-fixtures]]
             [endpoint.core :as core]
             [ring.mock.request :as mock]
-            [support.db :refer [*db* with-test-db with-rollback]]
+            [support.db :refer [*db* with-rollback]]
             [todo-app.db :as todos]))
 
-(use-fixtures :once with-test-db)
 (use-fixtures :each with-rollback)
 
 (defn- request

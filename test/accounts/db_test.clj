@@ -2,9 +2,8 @@
   (:require [accounts.db :as accounts]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [crypto.password.bcrypt :as password]
-            [support.db :refer [*db* with-test-db with-rollback]]))
+            [support.db :refer [*db* with-rollback]]))
 
-(use-fixtures :once with-test-db)
 (use-fixtures :each with-rollback)
 
 (deftest create-user!-test

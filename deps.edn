@@ -26,6 +26,9 @@
                           ring/ring-mock {:mvn/version "0.6.2"}
                           cheshire/cheshire {:mvn/version "6.2.0"}}
             :exec-fn     cognitect.test-runner.api/test}
+           :test-migrate
+           {:extra-paths ["test"]
+            :exec-fn     support.db/migrate!}
            :runner
            {:main-opts   ["-m" "cognitect.test-runner"]}
            :cljfmt {:extra-deps {dev.weavejester/cljfmt {:mvn/version "0.16.5"}}

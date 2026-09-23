@@ -1,9 +1,8 @@
 (ns todo-app.db-test
   (:require [clojure.test :refer [deftest is testing use-fixtures]]
-            [support.db :refer [*db* with-test-db with-rollback]]
+            [support.db :refer [*db* with-rollback]]
             [todo-app.db :as todos]))
 
-(use-fixtures :once with-test-db)
 (use-fixtures :each with-rollback)
 
 (deftest create-todo!-test
