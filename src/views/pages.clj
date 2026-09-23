@@ -1,6 +1,7 @@
 (ns views.pages
   (:require [views.components :as c]
             [views.util :refer [render]]
+            [hiccup.util :refer [raw-string]]
             [clojure.tools.logging :as log]))
 
 (def head
@@ -15,7 +16,8 @@
     [:div {:class "max-w-2xl mx-auto"} [:div {:class "bg-white rounded-lg shadow-lg p-6"} content]]]])
 
 (defn layout [content]
-  (render [:html head (body content)]))
+  (render (list (raw-string "<!DOCTYPE html>")
+                [:html head (body content)])))
 
 (defn home []
   (layout [:span {:class "example"} "Ahhh"]))

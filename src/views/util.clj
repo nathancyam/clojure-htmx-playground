@@ -9,5 +9,5 @@
   [hiccup-html]
   (-> (str hiccup-html)
       (response)
-      (header "Content-Type", "text/html")))
+      (header "Content-Type" "text/html; charset=utf-8")))
 
