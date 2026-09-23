@@ -19,6 +19,8 @@
  :aliases {:dev {:extra-paths ["dev"]
                  :extra-deps {ring/ring-mock {:mvn/version "0.6.2"}}}
            :run {:main-opts ["-m" "endpoint.core"]}
+           :build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.14"}}
+                   :ns-default build}
            :test
            {:extra-paths ["test"]
             :extra-deps  {lambdaisland/kaocha {:mvn/version "1.91.1392"}

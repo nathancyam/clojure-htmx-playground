@@ -1,6 +1,7 @@
 (ns storage.db
   (:require [next.jdbc.connection :as connection]
             [next.jdbc.result-set :as rs]
+            [clojure.java.io :as io]
             [clojure.tools.logging :as log]
             [aero.core :refer [read-config]])
   (:import (com.zaxxer.hikari HikariDataSource)
@@ -19,7 +20,7 @@
   (read-column-by-index [v _ _] (read-pgobject v)))
 
 (def db-spec
-  (-> (read-config "config.edn") :db-spec))
+  (-> (read-config (io/resource "config.edn")) :db-spec))
 
 (defn make-pool
   "Create a connection pool. The caller owns it and must `close` it."

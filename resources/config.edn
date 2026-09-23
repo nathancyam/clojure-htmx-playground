@@ -1,0 +1,8 @@
+;; Database settings come from environment variables in production; the
+;; defaults are for local development.
+{:db-spec {:dbtype   "postgres"
+           :host     #or [#env DB_HOST "localhost"]
+           :port     #long #or [#env DB_PORT 5432]
+           :dbname   #or [#env DB_NAME "todoapp_dev"]
+           :username #or [#env DB_USER "postgres"]
+           :password #or [#env DB_PASSWORD "postgres"]}}

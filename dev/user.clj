@@ -1,17 +1,16 @@
 (ns user
   (:require [accounts.db :as accounts]
-            [ragtime.jdbc :as jdbc]
-            [ragtime.repl :as repl]
-            [aero.core :refer [read-config]]
             [endpoint.core :as core]
+            [storage.db :as db]
+            [storage.migrations :as migrations]
             [clojure.core :as c]))
 
-(def config
-  {:datastore  (jdbc/sql-database {:connection-uri (-> (read-config "config.edn") :migrations :uri)})
-   :migrations (jdbc/load-resources "migrations")})
-
 (defn migrate []
-  (repl/migrate config))
+  (let [pool (db/make-pool)]
+    (try
+      (migrations/migrate! pool)
+      (finally
+        (db/close pool)))))
 
 (defn dev-db
   "The dev server's connection pool, for running queries from the REPL."

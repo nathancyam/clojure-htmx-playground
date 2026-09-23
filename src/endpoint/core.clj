@@ -1,9 +1,11 @@
 (ns endpoint.core
+  (:gen-class)
   (:require [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.middleware.reload :refer [wrap-reload]]
             [clojure.tools.logging :as log]
             [storage.db :as db]
+            [storage.migrations :as migrations]
             [compojure.core :refer [defroutes context]]
             [compojure.route :as route]
             [ring.middleware.params :refer [wrap-params]]
@@ -44,7 +46,7 @@
   (stop-dev-server)
   (start-dev-server))
 
-(defn -main []
+(defn- serve []
   (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))
         pool (db/make-pool)]
     (log/info "Starting server on port" {:port port})
@@ -58,3 +60,21 @@
                   (db/close pool)
                   (println "Server stopped."))))
       (.join server))))
+
+(defn- migrate []
+  (let [pool (db/make-pool)]
+    (try
+      (migrations/migrate! pool)
+      (finally
+        (db/close pool)))))
+
+(defn -main
+  "With no arguments, start the web server. With `migrate`, apply pending
+  database migrations and exit."
+  [& args]
+  (case (first args)
+    nil       (serve)
+    "migrate" (migrate)
+    (binding [*out* *err*]
+      (println "Unknown command:" (first args) "(expected no arguments, or migrate)")
+      (System/exit 1))))

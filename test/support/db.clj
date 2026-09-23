@@ -4,9 +4,8 @@
   `with-rollback` runs each test in a transaction that is rolled back, so
   tests never leave data behind."
   (:require [next.jdbc :as jdbc]
-            [ragtime.next-jdbc :as ragtime]
-            [ragtime.repl :as ragtime-repl]
-            [storage.db :as db])
+            [storage.db :as db]
+            [storage.migrations :as migrations])
   (:import (java.sql SQLException)))
 
 (def test-db-spec
@@ -33,8 +32,7 @@
       (jdbc/execute! admin [(str "CREATE DATABASE " dbname)])))
   (let [pool (db/make-pool test-db-spec)]
     (try
-      (ragtime-repl/migrate {:datastore (ragtime/sql-database pool)
-                             :migrations (ragtime/load-resources "migrations")})
+      (migrations/migrate! pool)
       (finally
         (db/close pool)))))
 

@@ -1,0 +1,16 @@
+# Only deps.edn, build.clj, src/ and resources/ are needed to build the image.
+.git
+.gitignore
+.cpcache
+.clj-kondo
+.lsp
+.nrepl-port
+target
+dev
+test
+tests.edn
+mise.toml
+Dockerfile
+.dockerignore
+*.md
+.env*
